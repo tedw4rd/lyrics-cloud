@@ -5,6 +5,7 @@ $(function(){
 	var g;
 
 	var fill = d3.scale.category20();
+	var fontSize = d3.scale.log().range([10, 100]);
 
 	window.SongModel = Backbone.Model.extend({
 		urlRoot: '/api/v1/song/'
@@ -66,12 +67,45 @@ $(function(){
 		},
 
 		render: function(eventName){
-			this.words = [];
+			var rawWords = [];
+
 			for( var i = 0; i < this.collection.total; i++ ){
 				var lyrics = this.collection.models[i].get('lyrics').replace('\n', ' ').replace('\r', ' ');
-				this.words = this.words.concat(lyrics.split(' '));
+				rawWords = rawWords.concat(lyrics.split(' '));
 			}
-			this.cloudVis.words(this.words.map(function(d) {return {text: d, size: 10 + Math.random() * 90};}));
+
+			if( rawWords.length == 0 ){
+				return;
+			}
+
+			words = []
+			for(var i = 0; i < rawWords.length; i++){
+				var word = $.trim(rawWords[i]).toLowerCase();
+				word = word.replace("?", " ").replace("!", " ").replace(".", " ").replace(",", " ");
+				words.push(word);
+			}
+
+			var wordCounts = {};
+			var wordKeys = [];
+			var mostCount = 1;
+			for(var i = 0; i < words.length; i++){
+				var word = words[i];
+				if(word in wordCounts){
+					wordCounts[word] += 1;
+					if(wordCounts[word] > mostCount){
+						mostCount = wordCounts[word];
+					}
+				} else {
+					wordCounts[word] = 1;
+					wordKeys.push(word);
+				}
+			}
+
+			fontSize.domain([1, mostCount]);
+
+			this.cloudVis.words(wordKeys.map(function(d) {
+				return {text: d, size: fontSize(wordCounts[d])};
+			}));
 			this.cloudVis.start();
 
 			return this;
