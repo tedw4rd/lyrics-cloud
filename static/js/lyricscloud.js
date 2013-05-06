@@ -57,7 +57,7 @@ $(function(){
 			this.collection.bind('add', this.render, this);
 			this.collection.bind('remove', this.render, this);
 			this.collection.bind('reset', this.render, this);
-			g = d3.select("body").append("svg").attr("width", w).attr("height", h).append("g").attr("transform", "translate(" + [w >> 1, h >> 1] + ")");
+			g = d3.select("#vis").append("svg").attr("width", w).attr("height", h).append("g").attr("transform", "translate(" + [w >> 1, h >> 1] + ")");
 
 			this.cloudVis = d3.layout.cloud()
 				.size([w,h])
@@ -113,6 +113,60 @@ $(function(){
 		}
 	});
 
+	var Band = Backbone.Model.extend({
+		urlRoot: '/api/v1/band/'
+	});
+
+	var BandList = Backbone.Collection.extend({
+		model: Band,
+		url: "/api/v1/band?format=json",
+		parse: function(resp) {
+				this.total = resp.meta.total_count;
+				this.offset = resp.meta.offset + this.limit;
+				this.hasMore = this.total > this.models.length;
+				return resp.objects;
+		}
+	});
+
+	var Album = Backbone.Model.extend({
+		urlRoot: '/api/v1/album/'
+	});
+
+	var AlbumList = Backbone.Collection.extend({
+		model: Album,
+		url: function(){
+			params = "format=json"
+			if(this.band){
+				params += "&band__name=" + this.band;
+			}
+			return '/api/v1/album/?' + params;
+		},
+		parse: function(resp) {
+				this.total = resp.meta.total_count;
+				this.offset = resp.meta.offset + this.limit;
+				this.hasMore = this.total > this.models.length;
+				return resp.objects;
+		}
+	});
+
+	var SelectorView = Backbone.View.extend({
+		initialize: function(){
+			this.collection.bind('change', this.render, this);
+			this.collection.bind('add', this.render, this);
+			this.collection.bind('remove', this.render, this);
+			this.collection.bind('reset', this.render, this);
+		},
+
+		render: function(){
+			$(this.el).empty();
+			$(this.el).append("<option>--</option>");
+			for( var i = 0; i < this.collection.total; i++ ){
+				var band = this.collection.models[i];
+				$(this.el).append("<option>"+band.get("name")+"</option>");
+			}
+		}
+	});
+
 	var Router = Backbone.Router.extend({
 
 		routes:{
@@ -124,6 +178,25 @@ $(function(){
 		initialize: function(){
 			this.songList = new SongList(null, {});
 			this.lyricCloud = new LyricCloud({collection:this.songList});
+
+			this.bandList = new BandList();
+			this.albumList = new AlbumList();
+
+			this.bandSelector = new SelectorView({
+				collection:this.bandList, 
+				el:$("#bandSelect"),
+				events:{
+					"change select": function(){
+						this.albumList.band = $("#bandSelect").find(":selected").text();
+						this.albumList.fetch();
+					}
+				}
+			});
+
+			this.albumSelector = new SelectorView({collection:this.albumList, el:$("#albumSelect")});
+
+			this.bandList.fetch();
+			this.albumList.fetch();
 		},
 	
 		all:function () {
