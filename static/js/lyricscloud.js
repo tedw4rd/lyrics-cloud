@@ -21,7 +21,8 @@ $(function(){
 			params = "format=json"
 			if(this.band){
 				params += "&album__band__name=" + this.band;
-			} else if(this.album){
+			}
+			if(this.album){
 				params += "&album__name=" + this.album;
 			}
 			return '/api/v1/song/?' + params;
@@ -112,17 +113,35 @@ $(function(){
 		}
 	});
 
-	window.Router = Backbone.Router.extend({
+	var Router = Backbone.Router.extend({
 
 		routes:{
 			"":"all",
+			":band":"displayBand",
+			":band/:album":"displayAlbum"
+		},
+
+		initialize: function(){
+			this.songList = new SongList(null, {});
+			this.lyricCloud = new LyricCloud({collection:this.songList});
 		},
 	
 		all:function () {
-			this.songList = new SongList(null, {});
-			this.lyricCloud = new LyricCloud({collection:this.songList});
+			this.songList.band = false;
+			this.songList.album = false;
 			this.songList.fetch();
-			this.lyricCloud.render();
+		},
+
+		displayBand: function(band){
+			this.songList.band = band;
+			this.songList.album = false;
+			this.songList.fetch();
+		},
+
+		displayAlbum: function(band, album){
+			this.songList.band = band;
+			this.songList.album = album;
+			this.songList.fetch();
 		}
 	});
 	
