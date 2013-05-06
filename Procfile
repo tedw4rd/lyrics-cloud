@@ -1,1 +1,1 @@
-web: gunicorn lyricscloud.wsgi
+web: python manage.py collectstatic --noinput; gunicorn lyricscloud.wsgi

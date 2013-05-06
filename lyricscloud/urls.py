@@ -13,8 +13,13 @@ data_api.register(SongResource())
 from frontend.views import index
 
 urlpatterns = patterns('',
-    url(r'^$', index, name='index'),
-    url(r'^api/', include(data_api.urls)),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+	url(r'^$', index, name='index'),
+	url(r'^api/', include(data_api.urls)),
+	url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+	url(r'^admin/', include(admin.site.urls)),
 )
+
+if not settings.DEBUG:
+	urlpatterns += patterns('',
+		(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
+	)
