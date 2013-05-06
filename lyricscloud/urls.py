@@ -1,17 +1,17 @@
 from django.conf.urls import patterns, include, url
-
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
+from tastypie.api import Api
+from datastore.api import BandResource, AlbumResource, SongResource
+
+data_api = Api(api_name="v1")
+data_api.register(BandResource())
+data_api.register(AlbumResource())
+data_api.register(SongResource())
+
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'lyricscloud.views.home', name='home'),
-    # url(r'^lyricscloud/', include('lyricscloud.foo.urls')),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
+    url(r'^api/', include(data_api.urls)),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 )
