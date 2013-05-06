@@ -71,7 +71,7 @@ $(function(){
 			var rawWords = [];
 
 			for( var i = 0; i < this.collection.total; i++ ){
-				var lyrics = this.collection.models[i].get('lyrics').replace('\n', ' ').replace('\r', ' ');
+				var lyrics = this.collection.models[i].get('lyrics').replace(/\n/g, ' ').replace(/\r/g, ' ');
 				rawWords = rawWords.concat(lyrics.split(' '));
 			}
 
