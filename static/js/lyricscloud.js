@@ -7,11 +7,11 @@ $(function(){
 	var fill = d3.scale.category20();
 	var fontSize = d3.scale.log().range([10, 100]);
 
-	window.SongModel = Backbone.Model.extend({
+	var SongModel = Backbone.Model.extend({
 		urlRoot: '/api/v1/song/'
 	});
 
-	window.SongList = Backbone.Collection.extend({
+	var SongList = Backbone.Collection.extend({
 		model: SongModel,
 		initialize: function(data, options){
 			this.band = options.band || false;
@@ -36,7 +36,7 @@ $(function(){
 		}
 	});
 
-	window.LyricCloud = Backbone.View.extend({
+	var LyricCloud = Backbone.View.extend({
 
 		draw: function(words){
 			g.selectAll("text")
