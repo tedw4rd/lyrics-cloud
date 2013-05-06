@@ -21,6 +21,7 @@ class Song(models.Model):
 	name = models.CharField(max_length=128)
 	lyrics = models.TextField()
 	album = models.ForeignKey(Album)
+	track_number = models.IntegerField(default=0)
 
 	def __unicode__(self):
 		return u"%s - %s" % (self.album.band.name, self.name)
